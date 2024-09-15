@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calorie Buddy - Fun Food Logging</title>
+    <!-- Include Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Include Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-1O3SFFwPbsOd9cqYx5F33gTi36Ylu8Ifp+xEGazP5V5JnRR+IB7EKr2k8JK1epF5" crossorigin="anonymous">
+    <style>
+        /* CSS Styles */
+        :root {
+            --primary-color: #4A90E2;
+            --secondary-color: #50E3C2;
+            --background-color: #F4F7F9;
+            --text-color: #333;
+            --border-radius: 8px;
+            --font-size-base: 18px;
+            --font-size-large: 22px;
+            --font-size-small: 16px;
+            --box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-size: var(--font-size-base);
+            line-height: 1.6;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: var(--font-size-large);
+            margin: 0;
+        }
+
+        .tagline {
+            font-size: var(--font-size-small);
+            margin: 0;
+        }
+
+        /* Container and Menu Button */
+        .container {
+            flex: 1;
+            padding: 1rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .menu-button-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .menu-button {
+            width: auto;
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+        }
+
+        .menu-button:hover {
+            background-color: #3DD1B0;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            right: 0;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .dropdown-menu a {
+            padding: 1rem;
+            text-decoration: none;
+            color: var(--text-color);
+            font-size: var(--font-size-base);
+            cursor: pointer;
+        }
+
+        .dropdown-menu a:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Input and Button Styles */
+        input, select, button {
+            width: 100%;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-size: var(--font-size-base);
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background-color: #3DD1B0;
+        }
+
+        /* Adjust width for Menu Button */
+        .menu-button {
+            width: auto;
+        }
+
+        /* Log Table Styles */
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .log-table th, .log-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .log-table th {
+            background-color: #f0f0f0;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-buttons button {
+            padding: 0.5rem 1rem;
+            font-size: var(--font-size-small);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .action-buttons button:hover {
+            background-color: #357ABD;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1001;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            max-width: 90%;
+            max-height: 90%;
+            overflow-y: auto;
+            font-size: var(--font-size-base);
+            box-sizing: border-box;
+            box-shadow: var(--box-shadow);
+            position: relative;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 1rem;
+        }
+
+        .tab-nav button {
+            flex: 1;
+            padding: 1rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: var(--font-size-base);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .tab-nav button:hover {
+            background-color: #f0f0f0;
+        }
+
+        .tab-nav button.active {
+            border-bottom: 2px solid var(--primary-color);
+            font-weight: bold;
+            color: var(--primary-color);
+            background-color: #e6f0fa;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Edit Table Styles */
+        .edit-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .edit-table th, .edit-table td {
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+            text-align: left;
+            vertical-align: middle;
+        }
+
+        .edit-table th {
+            background-color: #f0f0f0;
+        }
+
+        .edit-table input[type="text"],
+        .edit-table input[type="number"] {
+            width: 100%;
+            max-width: 100%;
+            padding: 0.5rem;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+        }
+
+        .edit-table select {
+            width: 100%;
+            max-width: 100%;
+            padding: 0.5rem;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: var(--border-radius);
+        }
+
+        .edit-table .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .edit-table .action-buttons button {
+            padding: 0.5rem 1rem;
+            font-size: var(--font-size-small);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .edit-table .action-buttons button:hover {
+            background-color: #357ABD;
+        }
+
+        /* Modal Actions */
+        .modal-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: space-between;
+        }
+
+        .modal-actions button {
+            flex: 1 1 calc(33% - 1rem);
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            padding: 0.75rem;
+            border-radius: var(--border-radius);
+        }
+
+        .modal-actions button:hover {
+            background-color: #3DD1B0;
+        }
+
+        /* Confirmation Dialog Styles */
+        .confirm-dialog {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            z-index: 1002;
+            display: none;
+        }
+
+        .confirm-dialog p {
+            margin-bottom: 1.5rem;
+        }
+
+        .confirm-dialog .confirm-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .confirm-dialog .confirm-actions button {
+            flex: 0 0 auto;
+            padding: 0.5rem 1rem;
+            font-size: var(--font-size-base);
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+        }
+
+        .confirm-dialog .confirm-actions .confirm-yes {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .confirm-dialog .confirm-actions .confirm-no {
+            background-color: #ddd;
+            color: var(--text-color);
+        }
+
+        /* Accessibility improvements */
+        input, select, button {
+            outline: none;
+        }
+
+        input:focus, select:focus, button:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+        }
+
+        /* Footer Styles */
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Calorie Buddy</h1>
+        <p class="tagline">Your friendly food logging companion</p>
+    </header>
+
+    <div class="container">
+        <!-- Menu Button -->
+        <div class="menu-button-container">
+            <button class="menu-button" onclick="toggleMenu()" aria-label="Menu">Menu</button>
+            <!-- Dropdown Menu -->
+            <div id="dropdownMenu" class="dropdown-menu">
+                <a onclick="openEditModal()">Edit Profiles and Foods</a>
+                <a onclick="exportCSV()">Export Your Food Journey</a>
+                <a onclick="importCSV()">Import Foods from CSV</a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <select id="profileSelect" onchange="updateFoodList()">
+            <option value="">Choose your lifestyle</option>
+            <!-- Options will be populated dynamically -->
+        </select>
+        <p id="profileDescription"></p>
+        <select id="foodSelect" onchange="handleFoodSelect()">
+            <option value="">Pick your food or enter a new one</option>
+        </select>
+        <input type="text" id="foodItem" placeholder="What's on your plate?">
+        <input type="number" id="calories" inputmode="numeric" placeholder="How many calories?">
+        <button onclick="addEntry()" aria-label="Log Food">Log It!</button>
+
+        <table class="log-table" id="logTable">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Food Item</th>
+                    <th>Calories</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="logTableBody"></tbody>
+        </table>
+    </div>
+
+    <footer>
+        Calorie Buddy - Made by Nils Johansson &copy; <span id="currentYear"></span>
+    </footer>
+
+    <!-- Modal for Editing Profiles and Food Lists -->
+    <div id="editModal" class="modal" aria-hidden="true">
+        <div class="modal-content">
+            <h2>Edit Profiles and Foods</h2>
+            <!-- Confirmation Dialog -->
+            <div id="confirmDialog" class="confirm-dialog">
+                <p>Do you want to exit the menu without saving?</p>
+                <div class="confirm-actions">
+                    <button class="confirm-no" onclick="cancelCloseModal()">No</button>
+                    <button class="confirm-yes" onclick="confirmCloseModal()">Yes</button>
+                </div>
+            </div>
+            <!-- Tab Navigation -->
+            <div class="tab-nav">
+                <button id="profilesTab" class="active" onclick="showTab('profiles')">Profiles</button>
+                <button id="foodsTab" onclick="showTab('foods')">Foods</button>
+            </div>
+            <!-- Profiles Tab Content -->
+            <div id="profilesContent" class="tab-content active">
+                <button onclick="addNewProfile()" aria-label="Add New Profile">Add Profile</button>
+                <table class="edit-table" id="profilesTable">
+                    <thead>
+                        <tr>
+                            <th>Profile Name</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="profilesTableBody"></tbody>
+                </table>
+            </div>
+            <!-- Foods Tab Content -->
+            <div id="foodsContent" class="tab-content">
+                <button onclick="addNewFood()" aria-label="Add New Food">Add Food</button>
+                <table class="edit-table" id="foodsTable">
+                    <thead>
+                        <tr>
+                            <th>Food Name</th>
+                            <th>Calories</th>
+                            <th>Profile</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="foodsTableBody"></tbody>
+                </table>
+            </div>
+            <div class="modal-actions">
+                <button onclick="saveProfiles()" aria-label="Save Changes">Save Changes</button>
+                <button onclick="revertProfiles()" aria-label="Revert to Default">Revert to Default</button>
+                <button onclick="attemptCloseModal()" aria-label="Close Modal">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden File Input for CSV Import -->
+    <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="handleCSVImport(event)">
+
+    <script>
+        // JavaScript Code
+
+        // Variable declarations and data structures
+        let entries = [];
+        let profiles = {
+            roadWarrior: {
+                name: "🚚 Road Warrior Trucker",
+                description: "For truckers on the road",
+                foods: [
+                    { name: "Truck Stop Burger", calories: 800 },
+                    { name: "Gas Station Coffee", calories: 5 },
+                    { name: "Beef Jerky", calories: 150 },
+                    { name: "Trail Mix", calories: 200 }
+                ]
+            },
+            campusCrammer: {
+                name: "🎓 Campus Crammer Student",
+                description: "For students pulling all-nighters",
+                foods: [
+                    { name: "Ramen Noodles", calories: 380 },
+                    { name: "Energy Drink", calories: 110 },
+                    { name: "Pizza Slice", calories: 285 },
+                    { name: "Microwave Burrito", calories: 350 }
+                ]
+            },
+            // Additional profiles can be added here...
+        };
+
+        const defaultProfiles = JSON.parse(JSON.stringify(profiles));
+        let unsavedChanges = false;
+
+        // Function to update the profile select dropdown
+        function updateProfileSelect() {
+            const profileSelect = document.getElementById('profileSelect');
+            const profileDescription = document.getElementById('profileDescription');
+            profileSelect.innerHTML = '<option value="">Choose your lifestyle</option>';
+            for (const key in profiles) {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = profiles[key].name;
+                profileSelect.appendChild(option);
+            }
+            profileDescription.textContent = '';
+        }
+
+        // Function to update the profile description
+        function updateProfileDescription() {
+            const profileSelect = document.getElementById('profileSelect');
+            const profileDescription = document.getElementById('profileDescription');
+            const profileKey = profileSelect.value;
+
+            if (profileKey && profiles[profileKey]) {
+                profileDescription.textContent = profiles[profileKey].description || '';
+            } else {
+                profileDescription.textContent = '';
+            }
+        }
+
+        // Function to update the food list based on selected profile
+        function updateFoodList() {
+            updateProfileDescription();
+
+            const profileSelect = document.getElementById('profileSelect');
+            const foodSelect = document.getElementById('foodSelect');
+            const profileKey = profileSelect.value;
+
+            foodSelect.innerHTML = '<option value="">Pick your food or enter a new one</option>';
+
+            if (profileKey && profiles[profileKey]) {
+                profiles[profileKey].foods.forEach(food => {
+                    const option = document.createElement('option');
+                    option.value = JSON.stringify(food);
+                    option.textContent = `${food.name} (${food.calories} cal)`;
+                    foodSelect.appendChild(option);
+                });
+            }
+        }
+
+        // Function to handle food selection from dropdown
+        function handleFoodSelect() {
+            const foodSelect = document.getElementById('foodSelect');
+            const foodItemInput = document.getElementById('foodItem');
+            const caloriesInput = document.getElementById('calories');
+
+            if (foodSelect.value) {
+                const food = JSON.parse(foodSelect.value);
+                foodItemInput.value = food.name;
+                caloriesInput.value = food.calories;
+            } else {
+                foodItemInput.value = '';
+                caloriesInput.value = '';
+            }
+        }
+
+        // Function to add a new entry
+        function addEntry() {
+            const foodItem = document.getElementById('foodItem').value.trim();
+            const calories = document.getElementById('calories').value.trim();
+
+            if (foodItem && calories) {
+                const timestamp = new Date().toLocaleString();
+                entries.push({ foodItem, calories, timestamp });
+                updateTable();
+                document.getElementById('foodItem').value = '';
+                document.getElementById('calories').value = '';
+                document.getElementById('foodSelect').value = '';
+            } else {
+                alert('Please enter both food item and calories.');
+            }
+        }
+
+        // Function to update the entries table
+        function updateTable() {
+            const logTableBody = document.getElementById('logTableBody');
+            logTableBody.innerHTML = '';
+
+            entries.forEach((entry, index) => {
+                const row = logTableBody.insertRow();
+                row.insertCell(0).textContent = entry.timestamp;
+                row.insertCell(1).textContent = entry.foodItem;
+                row.insertCell(2).textContent = entry.calories;
+                const actionsCell = row.insertCell(3);
+
+                const actionButtons = document.createElement('div');
+                actionButtons.className = 'action-buttons';
+
+                const copyButton = document.createElement('button');
+                copyButton.textContent = 'Copy';
+                copyButton.title = 'Duplicate Entry';
+                copyButton.onclick = () => copyEntry(index);
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.title = 'Delete Entry';
+                deleteButton.onclick = () => deleteEntry(index);
+
+                actionButtons.appendChild(copyButton);
+                actionButtons.appendChild(deleteButton);
+
+                actionsCell.appendChild(actionButtons);
+            });
+        }
+
+        // Function to copy an entry
+        function copyEntry(index) {
+            const newEntry = { ...entries[index], timestamp: new Date().toLocaleString() };
+            entries.push(newEntry);
+            updateTable();
+        }
+
+        // Function to delete an entry
+        function deleteEntry(index) {
+            entries.splice(index, 1);
+            updateTable();
+        }
+
+        // Function to export entries to CSV
+        function exportCSV() {
+            if (entries.length === 0) {
+                alert('No food entries to export yet!');
+                return;
+            }
+
+            let csvContent = 'data:text/csv;charset=utf-8,Time,Food Item,Calories\n';
+            entries.forEach(entry => {
+                csvContent += `"${entry.timestamp}","${entry.foodItem}",${entry.calories}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.href = encodedUri;
+            link.download = 'calorie_buddy_log.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Function to import foods from CSV
+        function importCSV() {
+            const profileSelect = document.getElementById('profileSelect');
+            const profileKey = profileSelect.value;
+
+            if (!profileKey) {
+                alert('Please select a profile before importing.');
+                return;
+            }
+
+            document.getElementById('csvFileInput').click();
+        }
+
+        // Function to handle CSV file import
+        function handleCSVImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                parseCSV(text);
+            };
+            reader.readAsText(file);
+        }
+
+        // Function to parse CSV content and add foods
+        function parseCSV(csvText) {
+            const profileSelect = document.getElementById('profileSelect');
+            const profileKey = profileSelect.value;
+
+            const lines = csvText.trim().split('\n');
+            lines.forEach(line => {
+                const [name, calories] = line.split(',');
+                if (name && calories) {
+                    profiles[profileKey].foods.push({ name: name.trim(), calories: parseInt(calories.trim()) });
+                }
+            });
+
+            updateFoodList();
+            unsavedChanges = true;
+            alert('Foods imported successfully! Remember to save your changes.');
+        }
+
+        // Function to toggle the dropdown menu
+        function toggleMenu() {
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            dropdownMenu.style.display = dropdownMenu.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        // Function to open the edit modal
+        function openEditModal() {
+            toggleMenu();
+            const editModal = document.getElementById('editModal');
+            editModal.style.display = 'block';
+            editModal.setAttribute('aria-hidden', 'false');
+            showTab('profiles');
+            updateEditTables();
+            unsavedChanges = false;
+        }
+
+        // Function to attempt to close the edit modal
+        function attemptCloseModal() {
+            if (unsavedChanges) {
+                showConfirmDialog();
+            } else {
+                closeEditModal();
+            }
+        }
+
+        // Function to close the edit modal
+        function closeEditModal() {
+            const editModal = document.getElementById('editModal');
+            editModal.style.display = 'none';
+            editModal.setAttribute('aria-hidden', 'true');
+            unsavedChanges = false;
+        }
+
+        // Function to show the confirmation dialog
+        function showConfirmDialog() {
+            const confirmDialog = document.getElementById('confirmDialog');
+            confirmDialog.style.display = 'block';
+        }
+
+        // Function to hide the confirmation dialog without closing the modal
+        function cancelCloseModal() {
+            const confirmDialog = document.getElementById('confirmDialog');
+            confirmDialog.style.display = 'none';
+        }
+
+        // Function to confirm closing the modal without saving
+        function confirmCloseModal() {
+            const confirmDialog = document.getElementById('confirmDialog');
+            confirmDialog.style.display = 'none';
+            unsavedChanges = false;
+            closeEditModal();
+        }
+
+        // Function to show the selected tab in the edit modal
+        function showTab(tabName) {
+            const profilesTab = document.getElementById('profilesTab');
+            const foodsTab = document.getElementById('foodsTab');
+            const profilesContent = document.getElementById('profilesContent');
+            const foodsContent = document.getElementById('foodsContent');
+
+            if (tabName === 'profiles') {
+                profilesTab.classList.add('active');
+                foodsTab.classList.remove('active');
+                profilesContent.classList.add('active');
+                foodsContent.classList.remove('active');
+            } else {
+                profilesTab.classList.remove('active');
+                foodsTab.classList.add('active');
+                profilesContent.classList.remove('active');
+                foodsContent.classList.add('active');
+            }
+        }
+
+        // Function to update the profiles and foods tables in the edit modal
+        function updateEditTables() {
+            // Update Profiles Table
+            const profilesTableBody = document.getElementById('profilesTableBody');
+            profilesTableBody.innerHTML = '';
+            for (const profileKey in profiles) {
+                const profile = profiles[profileKey];
+                const row = profilesTableBody.insertRow();
+
+                const nameCell = row.insertCell(0);
+                const descriptionCell = row.insertCell(1);
+                const actionsCell = row.insertCell(2);
+
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.value = profile.name;
+                nameInput.onchange = (e) => {
+                    profiles[profileKey].name = e.target.value;
+                    updateProfileSelect();
+                    updateFoodList();
+                    unsavedChanges = true;
+                };
+                nameCell.appendChild(nameInput);
+
+                const descriptionInput = document.createElement('input');
+                descriptionInput.type = 'text';
+                descriptionInput.value = profile.description || '';
+                descriptionInput.onchange = (e) => {
+                    profiles[profileKey].description = e.target.value;
+                    updateProfileDescription();
+                    unsavedChanges = true;
+                };
+                descriptionCell.appendChild(descriptionInput);
+
+                const actionButtons = document.createElement('div');
+                actionButtons.className = 'action-buttons';
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.title = 'Delete Profile';
+                deleteButton.onclick = () => {
+                    delete profiles[profileKey];
+                    updateEditTables();
+                    updateProfileSelect();
+                    updateFoodList();
+                    unsavedChanges = true;
+                };
+                actionButtons.appendChild(deleteButton);
+
+                actionsCell.appendChild(actionButtons);
+            }
+
+            // Update Foods Table
+            const foodsTableBody = document.getElementById('foodsTableBody');
+            foodsTableBody.innerHTML = '';
+            for (const profileKey in profiles) {
+                const profile = profiles[profileKey];
+                profile.foods.forEach((food, index) => {
+                    const row = foodsTableBody.insertRow();
+
+                    const nameCell = row.insertCell(0);
+                    const caloriesCell = row.insertCell(1);
+                    const profileCell = row.insertCell(2);
+                    const actionsCell = row.insertCell(3);
+
+                    const nameInput = document.createElement('input');
+                    nameInput.type = 'text';
+                    nameInput.value = food.name;
+                    nameInput.onchange = (e) => {
+                        food.name = e.target.value;
+                        updateFoodList();
+                        unsavedChanges = true;
+                    };
+                    nameCell.appendChild(nameInput);
+
+                    const caloriesInput = document.createElement('input');
+                    caloriesInput.type = 'number';
+                    caloriesInput.value = food.calories;
+                    caloriesInput.onchange = (e) => {
+                        food.calories = parseInt(e.target.value);
+                        updateFoodList();
+                        unsavedChanges = true;
+                    };
+                    caloriesCell.appendChild(caloriesInput);
+
+                    const profileSelect = document.createElement('select');
+                    for (const key in profiles) {
+                        const option = document.createElement('option');
+                        option.value = key;
+                        option.textContent = profiles[key].name;
+                        if (key === profileKey) option.selected = true;
+                        profileSelect.appendChild(option);
+                    }
+                    profileSelect.onchange = (e) => {
+                        profiles[e.target.value].foods.push(food);
+                        profile.foods.splice(index, 1);
+                        updateEditTables();
+                        updateFoodList();
+                        unsavedChanges = true;
+                    };
+                    profileCell.appendChild(profileSelect);
+
+                    const actionButtons = document.createElement('div');
+                    actionButtons.className = 'action-buttons';
+
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.title = 'Delete Food';
+                    deleteButton.onclick = () => {
+                        profile.foods.splice(index, 1);
+                        updateEditTables();
+                        updateFoodList();
+                        unsavedChanges = true;
+                    };
+                    actionButtons.appendChild(deleteButton);
+
+                    actionsCell.appendChild(actionButtons);
+                });
+            }
+        }
+
+        // Function to add a new profile
+        function addNewProfile() {
+            const newProfileKey = `profile${Date.now()}`;
+            profiles[newProfileKey] = {
+                name: 'New Profile',
+                description: '',
+                foods: []
+            };
+            updateEditTables();
+            updateProfileSelect();
+            unsavedChanges = true;
+        }
+
+        // Function to add a new food
+        function addNewFood() {
+            const profileKeys = Object.keys(profiles);
+            if (profileKeys.length === 0) {
+                alert('Please add a profile first.');
+                return;
+            }
+            const profileKey = profileKeys[0];
+            profiles[profileKey].foods.push({ name: 'New Food', calories: 0 });
+            updateEditTables();
+            updateFoodList();
+            unsavedChanges = true;
+        }
+
+        // Function to save profiles to localStorage
+        function saveProfiles() {
+            localStorage.setItem('profiles', JSON.stringify(profiles));
+            alert('Profiles saved successfully!');
+            unsavedChanges = false;
+        }
+
+        // Function to revert profiles to default
+        function revertProfiles() {
+            if (confirm('Are you sure you want to revert to default profiles? This action cannot be undone.')) {
+                profiles = JSON.parse(JSON.stringify(defaultProfiles));
+                localStorage.removeItem('profiles');
+                updateEditTables();
+                updateProfileSelect();
+                updateFoodList();
+                alert('Profiles reverted to default.');
+                unsavedChanges = false;
+            }
+        }
+
+        // Initialize app
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+        // Load profiles from localStorage if available
+        const savedProfiles = localStorage.getItem('profiles');
+        if (savedProfiles) {
+            profiles = JSON.parse(savedProfiles);
+        }
+
+        updateProfileSelect();
+        updateTable();
+
+        // Close dropdown menu when clicking outside
+        window.onclick = function(event) {
+            if (!event.target.matches('.menu-button') && !event.target.matches('.menu-button *')) {
+                const dropdownMenu = document.getElementById('dropdownMenu');
+                if (dropdownMenu.style.display === 'flex') {
+                    dropdownMenu.style.display = 'none';
+                }
+            }
+
+            // Close modal when clicking outside, with confirmation
+            if (event.target === document.getElementById('editModal')) {
+                attemptCloseModal();
+            }
+        }
+    </script>
+</body>
+</html>
